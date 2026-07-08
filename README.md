@@ -63,9 +63,11 @@ So we built SpinViz: point it at your Music Assistant server, and every TV becom
 |------------|--------------------|
 | ![CosmicDust](assets/screenshots/appletv-visualizer-cosmicdust.png) | ![Bipolar](assets/screenshots/appletv-visualizer-bipolar.png) |
 
-| Now Playing | Connected to Music Assistant |
-|-------------|------------------------------|
-| ![Now Playing](assets/screenshots/appletv-nowplaying.png) | ![Connected](assets/screenshots/appletv-connected.png) |
+<p align="center">
+  <img src="assets/screenshots/appletv-reacting-daftpunk.png" alt="SpinViz reacting to live music" width="800">
+  <br>
+  <em>Reacting to live audio — a preset warping in time with Daft Punk streamed from Music Assistant, now-playing details on the left.</em>
+</p>
 
 ### Android TV
 <p align="center">

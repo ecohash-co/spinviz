@@ -121,4 +121,6 @@ SpinViz stands on the shoulders of:
 
 SpinViz is in active development, working every day on Android TVs in our home, with the Apple TV version close behind. Store releases are coming — watch this space, and the badges above will go live when they're ready.
 
+[Privacy Policy](PRIVACY.md) — SpinViz collects no data.
+
 *Not affiliated with Apple, Google, or the Music Assistant project.*

@@ -1,0 +1,62 @@
+diff --git a/src/libprojectM/Renderer/Platform/GLResolver.cpp b/src/libprojectM/Renderer/Platform/GLResolver.cpp
+index 21eb4acaa..4c7cca453 100644
+--- a/src/libprojectM/Renderer/Platform/GLResolver.cpp
++++ b/src/libprojectM/Renderer/Platform/GLResolver.cpp
+@@ -2,6 +2,10 @@
+ #include "GLResolver.hpp"
+ #include "PlatformLibraryNames.hpp"
+ 
++#ifdef __APPLE__
++#include <TargetConditionals.h>
++#endif
++
+ #include <Logging.hpp>
+ 
+ #include <array>
+@@ -919,6 +923,18 @@ auto GLResolver::ProbeCurrentContext(const ResolverState& state) -> CurrentConte
+ 
+ #elif defined(__APPLE__)
+ 
++#if TARGET_OS_IPHONE
++    // SpinViz tvOS patch: on iOS/tvOS the only GL context mechanism is EAGL.
++    // There is no CGL and no EGL, and EAGL exposes no C-callable "get current
++    // context" symbol (it is +[EAGLContext currentContext] in Objective-C). The
++    // host app guarantees the EAGLContext is made current before every projectM
++    // call, so we report a current context here and let the resolver proceed.
++    // If no context is actually current, the subsequent glGetIntegerv/glGetString
++    // requirement checks in GladLoader::CheckGLRequirements() still fail honestly.
++    result.cglLibOpened = true;
++    result.cglAvailable = true;
++    result.cglCurrent = true;
++#else
+     // CGL (macOS native OpenGL)
+     result.cglLibOpened = state.m_glLib.IsOpen();
+ 
+@@ -927,6 +943,7 @@ auto GLResolver::ProbeCurrentContext(const ResolverState& state) -> CurrentConte
+         result.cglAvailable = true;
+         result.cglCurrent = state.m_cglGetCurrentContext() != nullptr;
+     }
++#endif
+ 
+ #elif !defined(__ANDROID__)
+ 
+diff --git a/src/libprojectM/Renderer/Platform/GladLoader.cpp b/src/libprojectM/Renderer/Platform/GladLoader.cpp
+index 0cb30ae46..2ec175b69 100644
+--- a/src/libprojectM/Renderer/Platform/GladLoader.cpp
++++ b/src/libprojectM/Renderer/Platform/GladLoader.cpp
+@@ -47,8 +47,13 @@ auto GladLoader::CheckGLRequirements() -> bool
+ 
+     glCheck
+         .WithApi(GLApi::OpenGLES)
+-        .WithMinimumVersion(3, 2)
+-        .WithMinimumShaderLanguageVersion(3, 20)
++        // SpinViz tvOS patch: Apple caps OpenGL ES at 3.0. projectM's GLES
++        // shaders are emitted as "#version 300 es" (GLSL ES 3.00), so ES 3.0 /
++        // GLSL ES 3.00 is sufficient. Lower the gate from 3.2/3.20 to 3.0/3.00
++        // so the engine runs natively on Apple's GLES 3.0 without spoofing the
++        // version probe from the app side.
++        .WithMinimumVersion(3, 0)
++        .WithMinimumShaderLanguageVersion(3, 0)
+         //        .WithRequiredExtension("GL_OES_texture_float")
+         //        .WithRequiredExtension("GL_OES_standard_derivatives")
+         .WithRequireCoreProfile(false);
